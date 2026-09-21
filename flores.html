@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Para Sabri</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Great+Vibes&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-deep: #07030e;
+            --bg-mid: #250d36;
+            --bg-sunset: #571c3d;
+            --text-gold: #f8db7a;
+            --text-light: #fff5f8;
+            --rose-dark: #6e0018;
+            --rose-mid: #a60c2e;
+            --rose-light: #e3244d;
+            --stem-dark: #1f361a;
+            --stem-light: #3d6e35;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-deep) 0%, var(--bg-mid) 50%, var(--bg-sunset) 100%);
+            min-height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-light);
+            overscroll-behavior-y: contain; 
+        }
+
+        #intro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(7, 3, 14, 0.98);
+            z-index: 1000;
+            transition: opacity 1.5s ease, visibility 1.5s ease;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .btn-open {
+            background: transparent;
+            border: 2px solid var(--text-gold);
+            color: var(--text-gold);
+            font-family: 'Cinzel', serif;
+            font-size: clamp(1rem, 4vw, 1.3rem);
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            box-shadow: 0 0 20px rgba(248, 219, 122, 0.2);
+            transition: all 0.4s ease;
+            animation: pulse-btn 2s infinite;
+            min-width: 250px;
+            touch-action: manipulation;
+        }
+
+        @keyframes pulse-btn {
+            0% { box-shadow: 0 0 10px rgba(248, 219, 122, 0.2); transform: scale(1); }
+            50% { box-shadow: 0 0 25px rgba(248, 219, 122, 0.6); transform: scale(1.05); }
+            100% { box-shadow: 0 0 10px rgba(248, 219, 122, 0.2); transform: scale(1); }
+        }
+
+        #intro-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        #main-scene {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 800px;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 2.5s ease-in-out;
+            padding: 20px;
+        }
+
+        #main-scene.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .bouquet-wrapper {
+            width: 100%;
+            max-width: 380px;
+            height: 42vh;
+            min-height: 220px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6));
+            margin-bottom: 20px;
+            transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 1.5s ease;
+        }
+
+        /* Efecto de achicamiento suave al llegar al segundo 19 */
+        .bouquet-wrapper.shrink {
+            transform: scale(0.6) translateY(-30px);
+            opacity: 0.9;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .stem-path {
+            stroke-dasharray: 800;
+            stroke-dashoffset: 800;
+        }
+
+        #main-scene.visible .stem-path {
+            animation: growStems 3.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes growStems {
+            to { stroke-dashoffset: 0; }
+        }
+
+        .flower-part {
+            opacity: 0;
+            transform: scale(0.5);
+        }
+
+        #main-scene.visible .leaf-left { animation: bloom 2s ease-out 1.5s forwards; transform-origin: 200px 320px; }
+        #main-scene.visible .leaf-right { animation: bloom 2s ease-out 2s forwards; transform-origin: 300px 340px; }
+        
+        #main-scene.visible .flower-bg-1 { animation: bloomRotate 2.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) 2.5s forwards; transform-origin: 120px 200px; }
+        #main-scene.visible .flower-bg-2 { animation: bloomRotate 2.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) 3.2s forwards; transform-origin: 380px 180px; }
+        #main-scene.visible .flower-main { animation: bloomRotate 3s cubic-bezier(0.175, 0.885, 0.32, 1.275) 4s forwards; transform-origin: 250px 140px; }
+
+        @keyframes bloom {
+            0% { opacity: 0; transform: scale(0); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes bloomRotate {
+            0% { opacity: 0; transform: scale(0) rotate(-20deg); }
+            100% { opacity: 1; transform: scale(1); rotate(0deg); }
+        }
+
+        .message-container {
+            text-align: center;
+            width: 100%;
+            z-index: 20;
+            padding: 0 10px;
+            position: relative;
+            min-height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .text-line {
+            opacity: 0;
+            transform: translateY(15px);
+            position: absolute;
+            left: 0;
+            right: 0;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .title {
+            font-family: 'Great Vibes', cursive;
+            font-size: clamp(2.5rem, 7.5vw, 4.2rem);
+            color: var(--text-gold);
+            text-shadow: 0 0 20px rgba(248, 219, 122, 0.4);
+            line-height: 1.1;
+        }
+
+        .paragraph {
+            font-size: clamp(1rem, 3.5vw, 1.25rem);
+            line-height: 1.5;
+            font-weight: 300;
+            max-width: 600px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.9);
+        }
+
+        .highlight {
+            font-weight: 500;
+            color: #ffc4d4;
+            font-style: italic;
+            text-shadow: 0 0 10px rgba(255, 196, 212, 0.4);
+        }
+
+        /* 
+          Sincronización exacta:
+          - t1 (Saludo inicial): Aparece a los 4s (cuando terminan de florecer las rosas) y se queda hasta el segundo 19.
+          - A partir del segundo 19 (cuando empieza la letra de la canción), entran los versos en cadena.
+        */
+        #main-scene.visible .t1 { animation: showUntil19 15s ease-in-out 4s forwards; }
+        
+        @keyframes showUntil19 {
+            0% { opacity: 0; transform: translateY(20px); filter: blur(4px); }
+            10% { opacity: 1; transform: translateY(0); filter: blur(0); }
+            85% { opacity: 1; transform: translateY(0); filter: blur(0); }
+            100% { opacity: 0; transform: translateY(-15px); filter: blur(4px); }
+        }
+
+        /* Letra de la canción secuenciada a partir del segundo 19 */
+        #main-scene.visible .t2 { animation: showAndHide 6s ease-in-out 19s forwards; }
+        #main-scene.visible .t3 { animation: showAndHide 6s ease-in-out 26s forwards; }
+        #main-scene.visible .t4 { animation: showAndHide 6s ease-in-out 33s forwards; }
+        #main-scene.visible .t5 { animation: stayVisible 10s ease-out 40s forwards; }
+
+        @keyframes showAndHide {
+            0% { opacity: 0; transform: translateY(20px); filter: blur(4px); }
+            15% { opacity: 1; transform: translateY(0); filter: blur(0); }
+            85% { opacity: 1; transform: translateY(0); filter: blur(0); }
+            100% { opacity: 0; transform: translateY(-15px); filter: blur(4px); }
+        }
+
+        @keyframes stayVisible {
+            0% { opacity: 0; transform: translateY(20px); filter: blur(4px); }
+            15% { opacity: 1; transform: translateY(0); filter: blur(0); }
+            100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+
+        @media (max-height: 650px) {
+            .bouquet-wrapper { height: 28vh; margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Carlos_Rivera_-_Como_pagarte_(mp3.pm).mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="intro-screen">
+        <button class="btn-open" id="start-btn">Toca la pantalla para abrir tu sorpresa</button>
+    </div>
+
+    <canvas id="canvas-container"></canvas>
+
+    <div id="main-scene">
+        <div class="bouquet-wrapper" id="bouquet">
+            <svg viewBox="0 0 500 500" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="gradStem" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#142e12"/>
+                        <stop offset="50%" stop-color="#3d6e35"/>
+                        <stop offset="100%" stop-color="#142e12"/>
+                    </linearGradient>
+                    <linearGradient id="gradLeaf" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#4a7c41"/>
+                        <stop offset="100%" stop-color="#193615"/>
+                    </linearGradient>
+                    
+                    <linearGradient id="roseDark" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#8a0321"/>
+                        <stop offset="100%" stop-color="#4a000e"/>
+                    </linearGradient>
+                    <linearGradient id="roseMid" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#c91038"/>
+                        <stop offset="100%" stop-color="#730519"/>
+                    </linearGradient>
+                    <linearGradient id="roseLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#ff3b66"/>
+                        <stop offset="100%" stop-color="#b8092c"/>
+                    </linearGradient>
+
+                    <linearGradient id="springPink" x1="0%" y1="100%" x2="0%" y2="0%">
+                        <stop offset="0%" stop-color="#d11f5a"/>
+                        <stop offset="60%" stop-color="#fcaec3"/>
+                        <stop offset="100%" stop-color="#fff0f4"/>
+                    </linearGradient>
+
+                    <filter id="magicGlow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="6" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
+                </defs>
+
+                <!-- Stems -->
+                <path class="stem-path" d="M250,500 C270,350 240,220 250,150" fill="none" stroke="url(#gradStem)" stroke-width="8" stroke-linecap="round"/>
+                <path class="stem-path" d="M250,500 C200,380 140,280 120,200" fill="none" stroke="url(#gradStem)" stroke-width="6" stroke-linecap="round" style="animation-delay: 0.3s;"/>
+                <path class="stem-path" d="M250,500 C320,400 370,270 380,180" fill="none" stroke="url(#gradStem)" stroke-width="6" stroke-linecap="round" style="animation-delay: 0.6s;"/>
+
+                <!-- Leaves -->
+                <g class="flower-part leaf-left">
+                    <path d="M220,350 C150,330 120,280 100,260 C140,270 180,300 220,350 Z" fill="url(#gradLeaf)"/>
+                    <path d="M100,260 C160,280 190,320 220,350" fill="none" stroke="#2a4d23" stroke-width="2"/>
+                </g>
+                <g class="flower-part leaf-right">
+                    <path d="M270,380 C340,360 380,320 420,290 C380,310 330,340 270,380 Z" fill="url(#gradLeaf)"/>
+                    <path d="M420,290 C360,315 310,350 270,380" fill="none" stroke="#2a4d23" stroke-width="2"/>
+                </g>
+
+                <!-- Left Flower -->
+                <g class="flower-part flower-bg-1" filter="url(#magicGlow)">
+                    <path d="M120,210 C90,170 80,100 120,90 C160,100 150,170 120,210" fill="url(#springPink)"/>
+                    <path d="M120,210 C100,160 100,110 120,95 C140,110 140,160 120,210" fill="#fff" opacity="0.6"/>
+                </g>
+
+                <!-- Right Flower -->
+                <g class="flower-part flower-bg-2" filter="url(#magicGlow)">
+                    <path d="M380,190 C340,150 340,80 380,70 C420,80 420,150 380,190" fill="url(#springPink)"/>
+                    <path d="M380,190 C365,140 365,90 380,75 C395,90 395,140 380,190" fill="#fff" opacity="0.5"/>
+                </g>
+
+                <!-- Main Rose -->
+                <g class="flower-part flower-main">
+                    <circle cx="250" cy="140" r="65" fill="url(#roseDark)"/>
+                    <path d="M250,210 C160,200 160,80 250,70 C340,80 340,200 250,210" fill="url(#roseMid)"/>
+                    <path d="M250,205 C180,195 170,110 210,85 C190,130 200,180 250,205 Z" fill="url(#roseLight)"/>
+                    <path d="M250,205 C320,195 330,110 290,85 C310,130 300,180 250,205 Z" fill="url(#roseLight)"/>
+                    <path d="M250,190 C200,180 190,100 250,90 C310,100 300,180 250,190" fill="url(#roseDark)"/>
+                    <path d="M250,185 C210,175 200,110 250,100 C300,110 290,175 250,185" fill="url(#roseMid)"/>
+                    <path d="M250,180 C215,160 210,120 230,105 C220,130 235,160 250,180 Z" fill="url(#roseLight)"/>
+                    <path d="M250,180 C285,160 290,120 270,105 C280,130 265,160 250,180 Z" fill="url(#roseLight)"/>
+                    <path d="M250,165 C230,155 225,120 250,115 C275,120 270,155 250,165" fill="url(#roseDark)"/>
+                    <path d="M250,160 C235,150 235,125 250,120 C265,125 265,150 250,160" fill="url(#roseMid)"/>
+                    <path d="M250,150 C240,145 240,135 250,130 C260,135 260,145 250,150" fill="url(#roseLight)"/>
+                    <path d="M245,140 Q250,135 255,140 Q250,145 245,140 Z" fill="#fff" opacity="0.3"/>
+                </g>
+                <circle cx="250" cy="140" r="40" fill="#fff" opacity="0.05" filter="url(#magicGlow)"/>
+            </svg>
+        </div>
+
+        <!-- Textos secuenciales -->
+        <div class="message-container">
+            <!-- Primeros 19 segundos: tu mensaje principal -->
+            <h1 class="text-line title t1">Feliz primavera, Sabri.<br><span style="font-size: 0.7em; font-family: 'Montserrat', sans-serif; font-weight: 300;">Me equivoqué y me duele en el alma haberte lastimado.</span></h1>
+            
+            <!-- A partir del segundo 19: entra la letra de la canción -->
+            <p class="text-line paragraph t2"><span class="highlight">Sos la mujer de mi vida</span> y no quiero perderte.</p>
+            <p class="text-line paragraph t3">¿Cómo pagarte todo lo que me das, cómo hacerte feliz cada día...?</p>
+            <p class="text-line paragraph t4">Por favor, dame la oportunidad de empezar de nuevo a tu lado.</p>
+            <p class="text-line paragraph t5"><span class="highlight">Te amo con todo mi corazón.</span></p>
+        </div>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('start-btn');
+        const introScreen = document.getElementById('intro-screen');
+        const mainScene = document.getElementById('main-scene');
+        const bgMusic = document.getElementById('bg-music');
+        const bouquet = document.getElementById('bouquet');
+
+        const canvas = document.getElementById('canvas-container');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let width, height;
+
+        function resizeCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = height + Math.random() * 300;
+                this.isPetal = Math.random() > 0.7;
+                
+                const baseSize = window.innerWidth < 600 ? 0.7 : 1;
+                this.size = this.isPetal ? (Math.random() * 6 + 3) * baseSize : (Math.random() * 2.5 + 0.5) * baseSize;
+                
+                this.speedY = (Math.random() * -1.5 - 0.5) * (window.innerHeight / 800);
+                this.speedX = (Math.random() - 0.5) * 1;
+                
+                const lightColors = ['rgba(248, 219, 122, 0.8)', 'rgba(255, 255, 255, 0.5)'];
+                const petalColors = ['rgba(255, 179, 198, 0.5)', 'rgba(227, 36, 77, 0.3)'];
+                
+                this.color = this.isPetal 
+                    ? petalColors[Math.floor(Math.random() * petalColors.length)]
+                    : lightColors[Math.floor(Math.random() * lightColors.length)];
+                
+                this.angle = Math.random() * Math.PI * 2;
+                this.spin = (Math.random() - 0.5) * 0.04;
+            }
+
+            update() {
+                this.y += this.speedY;
+                this.x += Math.sin(this.angle) * 0.5 + this.speedX;
+                this.angle += this.spin;
+
+                if (this.y < -50) {
+                    this.y = height + 50;
+                    this.x = Math.random() * width;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                
+                ctx.beginPath();
+                if (this.isPetal) {
+                    ctx.ellipse(0, 0, this.size, this.size / 2, 0, 0, Math.PI * 2);
+                } else {
+                    ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = this.color;
+                }
+                
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function initParticles() {
+            const count = window.innerWidth < 768 ? 35 : 70;
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, width, height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+            }
+            requestAnimationFrame(animateCanvas);
+        }
+
+        startBtn.addEventListener('click', () => {
+            bgMusic.volume = 0.7;
+            bgMusic.play().catch(error => {
+                console.log("Audio play failed.", error);
+            });
+
+            introScreen.classList.add('hidden');
+            
+            initParticles();
+            animateCanvas();
+
+            mainScene.classList.add('visible');
+
+            // Exactamente en el segundo 19 (cuando empieza el tema y la música fuerte),
+            // achicamos el ramo para dejar espacio a la letra de la canción abajo.
+            setTimeout(() => {
+                bouquet.classList.add('shrink');
+            }, 19000);
+        });
+
+    </script>
+</body>
+</html>
